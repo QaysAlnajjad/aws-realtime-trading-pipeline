@@ -75,6 +75,7 @@ resource "aws_iam_role_policy" "glue_s3_policy" {
 
 resource "aws_s3_bucket" "athena_results" {
   bucket = var.athena_results_bucket
+  force_destroy = true
 }
 
 resource "aws_athena_workgroup" "trading_workgroup" {
