@@ -1,0 +1,38 @@
+# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfvars.backup
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate.d/
+
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lambda deployment packages
+*.zip
+
+# Downloaded S3 files
+*.gz
+trading-firehose-*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
