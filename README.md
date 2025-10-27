@@ -1,17 +1,36 @@
-# Kinesis Trading Data Pipeline
+# AWS Real-Time Trading Data Pipeline
 
-Real-time trading data pipeline using AWS Kinesis, ECS, Lambda, and analytics services.
+Enterprise-grade real-time trading data pipeline built with AWS Kinesis, ECS, Lambda, and analytics services. Features automated deployment, real-time processing, and comprehensive monitoring.
+
+## Prerequisites
+
+- **AWS CLI** configured with appropriate credentials
+- **Terraform** v1.5.0 or later
+- **IAM Permissions** for Kinesis, ECS, Lambda, S3, DynamoDB, Glue, Athena
+- **Bash** environment (Linux/macOS/WSL)
 
 ## Architecture
 
+### Infrastructure Components
 1. **Foundation** - VPC, Network Firewall, VPC Endpoints
 2. **Data Streaming** - Kinesis Data Streams, Firehose, S3
 3. **Producers** - ECS tasks generating mock trading data
 4. **Consumers** - Lambda processing trades, DynamoDB for positions
 5. **Analytics** - Glue Data Catalog, Athena for SQL queries
 
+### Project Structure
+```
+├── modules/           # Reusable Terraform modules
+├── stages/           # 5-stage deployment pipeline
+├── utils/            # Helper scripts and tools
+├── .github/workflows/ # CI/CD automation
+├── deploy.sh         # One-command deployment
+└── destroy.sh        # Clean resource removal
+```
+
 ## Deployment
 
+### Local Deployment
 ```bash
 # Deploy entire pipeline
 ./deploy.sh
@@ -19,6 +38,13 @@ Real-time trading data pipeline using AWS Kinesis, ECS, Lambda, and analytics se
 # Destroy all resources
 ./destroy.sh
 ```
+
+### CI/CD Deployment
+- **Test Branch**: Automatic deployment on push
+- **Main Branch**: Manual deployment via GitHub Actions
+  1. Go to Actions → "Deploy Trading Pipeline"
+  2. Click "Run workflow" → Select main branch
+  3. Click "Run workflow"
 
 ## Post-Deployment Setup
 
@@ -66,6 +92,22 @@ Kinesis Stream → Firehose (5 min batches) → S3 raw-data/ → Glue Crawler (d
 **Real-Time:** Trading decisions and position management  
 **Batch:** Historical analysis and reporting
 
+### Trading Logic
+- **Buy Signal**: Price drops detected by Lambda consumer
+- **Sell Signal**: 5% profit threshold reached
+- **Position Storage**: DynamoDB for active positions
+- **Trade Archive**: S3 for completed trades
+
+## Utilities
+
+### Data Analysis Tool
+```bash
+# Download and analyze Firehose data
+aws s3 cp s3://kinesis-s3-bucket-101/raw-data/2025/01/15/12/file.gz .
+gunzip file.gz
+python3 utils/parse_trading_data.py file
+```
+
 ## Monitoring
 
 - **ECS Console** - Producer task status
@@ -73,3 +115,14 @@ Kinesis Stream → Firehose (5 min batches) → S3 raw-data/ → Glue Crawler (d
 - **Lambda Console** - Consumer execution logs
 - **S3 Console** - Data files (5-minute batches)
 - **Athena Console** - Query trading data
+
+## Troubleshooting
+
+**Deployment Issues:**
+- Verify AWS credentials: `aws sts get-caller-identity`
+- Check Terraform version: `terraform version`
+
+**Data Flow Issues:**
+- Monitor Kinesis shard utilization
+- Check Lambda error rates and timeouts
+- Verify S3 bucket permissions

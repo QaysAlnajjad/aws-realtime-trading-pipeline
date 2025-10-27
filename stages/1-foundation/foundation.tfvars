@@ -1,4 +1,5 @@
 vpc_cidr_block_config = "192.168.0.0/16"
+
 subnet_config = {
   NAT-Subnet = {
     cidr_block = "192.168.1.0/24"
@@ -27,12 +28,6 @@ nat_gateway_subnet_name_config = "NAT-Subnet"
 networkfirewall_subnet_name_config = "Firewall-Subnet"
 
 endpoint_config = {
-  "ecr.dkr" = {                           # Pull Docker images
-    vpc_endpoint_type = "Interface"
-  }
-  "ecr.api" = {                           # ECR API calls
-    vpc_endpoint_type = "Interface"
-  }
   logs = {
     vpc_endpoint_type = "Interface"
   }

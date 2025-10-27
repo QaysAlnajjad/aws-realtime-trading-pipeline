@@ -2,8 +2,8 @@ name: Deploy Trading Pipeline
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
+    branches: [ test ]
+  workflow_dispatch:
     branches: [ main ]
 
 jobs:
