@@ -1,12 +1,11 @@
 name: Destroy Trading Pipeline
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   workflow_dispatch:
-    inputs:
-      confirm_destroy:
-        description: 'Type "DESTROY" to confirm deletion of all resources'
-        required: true
-        default: ''
 
 jobs:
   destroy:
@@ -20,9 +19,8 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+          role-to-assume: arn:aws:iam::<aws-account-id>:role/github-actions-terraform-role
+          aws-region: us-east-1
         
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
@@ -30,12 +28,7 @@ jobs:
         terraform_version: 1.5.0
         
     - name: Make destroy script executable
-      run: chmod +x ./destroy.sh
+      run: chmod +x scripts/destroy.sh
       
     - name: Destroy infrastructure
-      run: ./destroy.sh
-      
-    - name: Destruction summary
-      run: |
-        echo "💥 Infrastructure destroyed successfully!"
-        echo "🧹 All AWS resources have been removed"
+      run: .scripts/destroy.sh

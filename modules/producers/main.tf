@@ -1,4 +1,3 @@
-# Get current AWS region dynamically
 data "aws_region" "current" {}
 
 /*
@@ -127,7 +126,7 @@ resource "aws_ecs_task_definition" "producer_task_definition" {
     memory = 512
     
     execution_role_arn = aws_iam_role.ecs_execution_role.arn
-    task_role_arn      = aws_iam_role.ecs_task_role.arn
+    task_role_arn = aws_iam_role.ecs_task_role.arn
     
     container_definitions = jsonencode([{
         name  = "kinesis-producer"
@@ -135,15 +134,15 @@ resource "aws_ecs_task_definition" "producer_task_definition" {
         
         environment = [
             {
-                name  = "KINESIS_STREAM_NAME"
+                name = "KINESIS_STREAM_NAME"
                 value = var.kinesis_stream_name
             },
             {
-                name  = "AWS_REGION"
+                name = "AWS_REGION"
                 value = data.aws_region.current.name
             },
             {
-                name  = "SEND_INTERVAL"
+                name = "SEND_INTERVAL"
                 value = "10"
             }
         ]
@@ -165,7 +164,7 @@ resource "aws_ecs_task_definition" "producer_task_definition" {
 
 # Security group for ECS tasks
 resource "aws_security_group" "ecs_tasks_sg" {
-    vpc_id      = var.vpc_id
+    vpc_id = var.vpc_id
     
     # Outbound traffic for Docker image pulls and AWS services via VPC endpoints
     egress {
@@ -188,7 +187,7 @@ resource "aws_ecs_service" "producer_service" {
     launch_type = each.value.launch_type
     
     network_configuration {
-        subnets         = var.ecs_subnets_ids
+        subnets = var.ecs_subnets_ids
         security_groups = [aws_security_group.ecs_tasks_sg.id]
     }
     

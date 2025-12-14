@@ -52,7 +52,6 @@ locals {
   route_tables = {
     private = {
       vpc_endpoint_id = one(one(aws_networkfirewall_firewall.network_firewall.firewall_status).sync_states).attachment[0].endpoint_id
-      //depends_on = [aws_networkfirewall_firewall.network_firewall]
     }
     public = {
       gateway_id = aws_internet_gateway.igw.id
@@ -74,18 +73,17 @@ resource "aws_route_table" "main" {
         nat_gateway_id = lookup(each.value, "nat_gateway_id", null)
     }
     
-    //depends_on = lookup(each.value, "depends_on", [])
     tags = { Name = "${each.key}-route-table" }
 }
 
 # NAT Gateway subnet gets direct IGW access
-resource "aws_route_table_association" "nat_gateway_subnet" {
+resource "aws_route_table_association" "nat_gateway_route_table_association" {
     subnet_id = aws_subnet.main[var.nat_gateway_subnet_name].id
     route_table_id = aws_route_table.main["public"].id
 }
 
 # Firewall subnet routes to NAT Gateway
-resource "aws_route_table_association" "firewall_subnet" {
+resource "aws_route_table_association" "firewall_route_table_association" {
     subnet_id = aws_subnet.main[var.networkfirewall_subnet_name].id
     route_table_id = aws_route_table.main["firewall"].id
 }
@@ -159,7 +157,7 @@ resource "aws_networkfirewall_firewall" "network_firewall" {
 //                                                                     Endpoints
 //==================================================================================================================================================
 
-resource "aws_security_group" "endpoints-SG" {
+resource "aws_security_group" "endpoints_sg" {
     vpc_id = aws_vpc.vpc.id
     ingress {
         from_port = 443
@@ -167,7 +165,7 @@ resource "aws_security_group" "endpoints-SG" {
         protocol = "TCP"
         cidr_blocks = [aws_vpc.vpc.cidr_block]
     }
-    tags = { Name = "endpoints-SG" }
+    tags = { Name = "endpoints-sg" }
 }
 
 resource "aws_vpc_endpoint" "main" {
@@ -177,7 +175,7 @@ resource "aws_vpc_endpoint" "main" {
         vpc_endpoint_type = each.value.vpc_endpoint_type
         # Interface endpoints use subnets and security groups
         subnet_ids = each.value.vpc_endpoint_type == "Interface" ? [aws_subnet.main["Prv-Sub-1A"].id, aws_subnet.main["Prv-Sub-1B"].id] : null
-        security_group_ids = each.value.vpc_endpoint_type == "Interface" ? [aws_security_group.endpoints-SG.id] : null
+        security_group_ids = each.value.vpc_endpoint_type == "Interface" ? [aws_security_group.endpoints_sg.id] : null
         private_dns_enabled = each.value.vpc_endpoint_type == "Interface" ? true : null
         # Gateway endpoints use route tables
         route_table_ids = each.value.vpc_endpoint_type == "Gateway" ? [aws_route_table.main["private"].id] : null

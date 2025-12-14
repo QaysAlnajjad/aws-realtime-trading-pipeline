@@ -1,10 +1,11 @@
 name: Deploy Trading Pipeline
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
-  push:
-    branches: [ test ]
   workflow_dispatch:
-    branches: [ main ]
 
 jobs:
   deploy:
@@ -17,8 +18,7 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: arn:aws:iam::<aws-account-id>:role/github-actions-terraform-role
         aws-region: us-east-1
         
     - name: Setup Terraform
@@ -27,12 +27,7 @@ jobs:
         terraform_version: 1.5.0
         
     - name: Make deploy script executable
-      run: chmod +x ./deploy.sh
+      run: chmod +x scripts/deploy.sh
       
     - name: Deploy infrastructure
-      run: ./deploy.sh
-      
-    - name: Deployment summary
-      run: |
-        echo "✅ Deployment completed successfully!"
-        echo "🔍 Check AWS Console for deployed resources"
+      run: .scripts/deploy.sh

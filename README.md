@@ -12,8 +12,8 @@ Enterprise-grade real-time trading data pipeline built with AWS Kinesis, ECS, La
 ## Architecture
 
 ### Infrastructure Components
-1. **Foundation** - VPC, Network Firewall, VPC Endpoints
-2. **Data Streaming** - Kinesis Data Streams, Firehose, S3
+1. **Foundation** - VPC, Network Firewall, Internet gateway, NAT gateway, route tables,  VPC Endpoints
+2. **Data Streaming** - Kinesis S3, Kinesis Data Streams, Firehose
 3. **Producers** - ECS tasks generating mock trading data
 4. **Consumers** - Lambda processing trades, DynamoDB for positions
 5. **Analytics** - Glue Data Catalog, Athena for SQL queries
@@ -21,11 +21,27 @@ Enterprise-grade real-time trading data pipeline built with AWS Kinesis, ECS, La
 ### Project Structure
 ```
 ├── modules/           # Reusable Terraform modules
-├── stages/           # 5-stage deployment pipeline
-├── utils/            # Helper scripts and tools
+│   ├── analytics
+│   ├── consumers
+│   ├── data-streaming
+│   ├── foundation
+│   ├── producers
+├── stages/            # 5-stage deployment pipeline with a bootstrap stage
+│   ├── 0-bootstrap
+│   ├── foundation
+│   ├── data-streaming
+│   ├── producers
+│   ├── consumers
+│   ├── analytics
+├── utils/             # Helper scripts and tools
 ├── .github/workflows/ # CI/CD automation
-├── deploy.sh         # One-command deployment
-└── destroy.sh        # Clean resource removal
+└── scripts/
+    └── deployment-automation-scripts/
+        ├── config.sh
+        ├── deploy.sh
+        ├── destroy.sh
+        └── stacks_config.sh
+
 ```
 
 ## Deployment
@@ -126,3 +142,8 @@ python3 utils/parse_trading_data.py file
 - Monitor Kinesis shard utilization
 - Check Lambda error rates and timeouts
 - Verify S3 bucket permissions
+
+## 🧠 Key Learnings
+- Implemented real-time data ingestion and analytics using Kinesis and Lambda.
+- Automated ETL metadata discovery with AWS Glue.
+- Designed CI/CD workflows for infrastructure automation with Terraform.

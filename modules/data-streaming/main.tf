@@ -125,9 +125,9 @@ resource "aws_iam_role_policy" "kinesis_firehose_role_policy" {
         {
           Effect = "Allow"
           Action = [
-              "kinesis:DescribeStream",
-              "kinesis:GetShardIterator",
-              "kinesis:GetRecords"
+            "kinesis:DescribeStream",
+            "kinesis:GetShardIterator",
+            "kinesis:GetRecords"
           ]
           Resource = aws_kinesis_stream.kinesis_data_stream.arn
         }
