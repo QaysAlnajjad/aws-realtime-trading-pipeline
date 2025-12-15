@@ -1,20 +1,22 @@
 # **Cross-Stack Dependency Map**
 ```
 ┌─────────────────────────────────────────────┐
-│                 1-foundation                │
+│                 foundation                  │
 │  OUTPUTS:                                   │
 |   • vpc_id ─────────────────────────────────┼─────▶ used by 3-producers, 
 │   • ecs_subnets_ids ────────────────────────┼─────▶ used by 3-producers, 
 └─────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────┐
-│                 2-data-streaming            │
+│                 data-streaming              │
+|  INPUTS:                                    |
+|   • s3_bucket_name                          |
 │  OUTPUTS:                                   │
 |   • kinesis_stream_arn ─────────────────────┼─────▶ used by 3-producers, 
 │   • kinesis_stream_name ────────────────────┼─────▶ used by 3-producers,
 │   • kinesis_s3_bucket_id ───────────────────┼─────▶ used by 
 └─────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────┐
-│                 3-producers                 │
+│                 producers                   │
 |  INPUTS:                                    |
 |   • kinesis_stream_arn                      |
 |   • kinesis_stream_name                     |

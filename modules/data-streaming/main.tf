@@ -13,6 +13,10 @@ resource "aws_s3_bucket" "s3_bucket" {
 
 resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
     bucket = aws_s3_bucket.s3_bucket.id
+    # Versioning disabled intentionally:
+    # - Data is append-only
+    # - No overwrite or rollback use case
+    # - Lifecycle rules define retention
     versioning_configuration {
       status = "Disabled"
     }  
@@ -61,16 +65,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "s3_bucket_lifecycle" {
         days = 90
         storage_class = "GLACIER"
       }
-      # Delete after 356 days
+      # Delete after 365 days
       expiration {
-        days = 356
+        days = 365
       }
     }
 }
 
 
 //=========================================================================================================================================
-//                                                   Kinesis Data Stream + Firehose
+//                                                        Kinesis Data Stream
 //=========================================================================================================================================
 
 resource "aws_kinesis_stream" "kinesis_data_stream" {
@@ -83,6 +87,11 @@ resource "aws_kinesis_stream" "kinesis_data_stream" {
     ]
     tags = { Name = var.kinesis_data_stream_name}
 }
+
+
+//=========================================================================================================================================
+//                                                            Firehose
+//=========================================================================================================================================
 
 resource "aws_iam_role" "kinesis_firehose_role" {
     name = "kinesis_firehose_role"
@@ -101,9 +110,9 @@ resource "aws_iam_role" "kinesis_firehose_role" {
     tags = { Name = "kinesis_firehose_role" }
 }
 
-resource "aws_iam_role_policy" "kinesis_firehose_role_policy" {
+resource "aws_iam_role_policy" "kinesis_firehose_policy" {
     role = aws_iam_role.kinesis_firehose_role.name
-    name = "kinesis_firehose_role_policy"
+    name = "kinesis_firehose_policy"
     policy = jsonencode({
       Version = "2012-10-17"
       Statement = [
@@ -147,7 +156,7 @@ resource "aws_kinesis_firehose_delivery_stream" "kinesis_firehose" {
         bucket_arn = aws_s3_bucket.s3_bucket.arn
         prefix = "raw-data/"
         
-        # Whichever comes first triggers the batch:
+        # Whichever comes first triggers the batch: 5 MB is reached OR 5 minutes pass
         buffering_size = 5
         buffering_interval = 300
 
