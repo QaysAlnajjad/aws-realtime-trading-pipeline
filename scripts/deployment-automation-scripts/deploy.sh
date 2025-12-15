@@ -10,7 +10,7 @@ if [ -z "$TF_STATE_BUCKET_NAME" ]; then
   echo "❌ ERROR: TF_STATE_BUCKET_NAME is required"; exit 1
 fi
 
-echo "Deploying WordPress Infrastructure..."
+echo "Deploying realtime-trading-pipeline Infrastructure..."
 echo "Backend region: $TF_STATE_BUCKET_REGION"
 echo "Deployment region: ${AWS_REGION:-<not-set>}"
 
@@ -49,16 +49,20 @@ echo "🚀 Starting Kinesis Trading System Deployment..."
 
 deploy_stack "foundation"
 deploy_stack "data-streaming"
+
+echo "Pushing Docker images to ECR..."
+./scripts/deployment-automation-scripts/pull-dockerhub-to-ecr.sh
+ECR_IMAGE_URI=$(cat scripts/runtime/producer-ecr-image-uri)
+STACK_VARS["producers"]+=" -var ecr_image_uri=$ECR_IMAGE_URI"
+
 deploy_stack "producers"
 deploy_stack "consumers"
 deploy_stack "analytics"
 
 
-
-
 # Start Glue Crawler to discover S3 data
 echo "🔍 Starting Glue crawler to discover trading data..."
-CRAWLER_NAME=$(cd stages/5-analytics && terraform output -raw glue_crawler_name)
+CRAWLER_NAME=$(cd stages/analytics && terraform output -raw glue_crawler_name)
 aws glue start-crawler --name "$CRAWLER_NAME"
 echo "⏳ Crawler '$CRAWLER_NAME' started. It will run in background to create table schemas."
 

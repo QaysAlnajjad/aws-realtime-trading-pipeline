@@ -12,7 +12,7 @@ if [ -z "$TF_STATE_BUCKET_NAME" ]; then
     exit 1
 fi
 
-echo "🔥 Starting AWS ECS WordPress Infrastructure Destruction..."
+echo "🔥 Starting realtime-trading-pipeline Infrastructure Destruction..."
 echo "⚠️  WARNING: This will destroy ALL resources created by deploy.sh"
 echo "⚠️  This action is IRREVERSIBLE!"
 echo ""
@@ -40,12 +40,12 @@ destroy_stack() {
   local stack="$1"
   echo "🟦 Destroying: $stack"
 
-  terraform -chdir="environments/$stack" init -reconfigure \
+  terraform -chdir="stages/$stack" init -reconfigure \
     -backend-config="bucket=$TF_STATE_BUCKET_NAME" \
-    -backend-config="key=environments/$stack/terraform.tfstate" \
+    -backend-config="key=stages/$stack/terraform.tfstate" \
     -backend-config="region=$TF_STATE_BUCKET_REGION"
 
-  terraform -chdir="environments/$stack" destroy \
+  terraform -chdir="stages/$stack" destroy \
     ${STACK_VARS[$stack]} \
     -var aws_region=$AWS_REGION \
     -auto-approve
@@ -62,14 +62,23 @@ echo "🗑️  Emptying S3 buckets..."
 aws s3 rm s3://$DATA_STREAM_S3_BUCKET_NAME --recursive --quiet || echo "Data bucket already empty or doesn't exist"
 aws s3 rm s3://$ATHENA_RESULTS_BUCKET_NAME --recursive --quiet || echo "Athena results bucket already empty or doesn't exist"
 
-
+if [[ -f "scripts/runtime/producer-ecr-image-uri" ]]; then
+    ECR_IMAGE_URI=$(cat scripts/runtime/producer-ecr-image-uri)
+    IMAGE_TAG="${ECR_IMAGE_URI##*:}"
+    echo "Loaded image for cleanup: $ECR_IMAGE_URI"
+    aws ecr batch-delete-image \
+      --repository-name "$ECR_REPO_NAME" \
+      --image-ids imageTag="$IMAGE_TAG" \
+      --region "$AWS_REGION" || true
+else
+    echo "No runtime ECR image state found — skipping image cleanup."
+fi
 
 destroy_stack "analytics"
 destroy_stack "consumers"
 destroy_stack "producers"
 destroy_stack "data-streaming"
 destroy_stack "foundation"
-
 
 
 echo "💥 Destruction Complete!"

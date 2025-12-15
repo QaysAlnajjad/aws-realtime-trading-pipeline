@@ -2,8 +2,6 @@ ecs_cluster_name = "kinesis-cluster"
 
 ecs_security_group_name = "kinesis-producer-tasks-SG" 
 
-docker_image_uri = "qaysalnajjad/kinesis-stock-producer:latest"
-
 ecs_task_definition_name = "kinesis-producer-task-definition"
 
 ecs_service_config = {

@@ -18,7 +18,7 @@ variable "ecs_subnets_ids" {            # ECS service network configuration, VPC
   type = list(string)
 }
 
-variable "docker_image_uri" {
+variable "ecr_image_uri" {
   type = string
 }
 

@@ -2,7 +2,7 @@ variable "ecs_cluster_name" {
   type = string
 }
 
-variable "docker_image_uri" {
+variable "ecr_image_uri" {
     type = string
 }
 

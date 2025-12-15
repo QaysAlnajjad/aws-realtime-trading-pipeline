@@ -130,7 +130,7 @@ resource "aws_ecs_task_definition" "producer_task_definition" {
     
     container_definitions = jsonencode([{
         name  = "kinesis-producer"
-        image = var.docker_image_uri
+        image = var.ecr_image_uri
         
         environment = [
             {

@@ -29,5 +29,5 @@ module "producer" {
     ecs_task_definition_name = var.ecs_task_definition_name
     ecs_security_group_name = var.ecs_security_group_name
     ecs_service = var.ecs_service_config
-    docker_image_uri = var.docker_image_uri
+    ecr_image_uri = var.ecr_image_uri
 }
