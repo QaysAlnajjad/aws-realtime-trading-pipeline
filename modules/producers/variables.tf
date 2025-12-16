@@ -38,15 +38,6 @@ variable "ecs_service" {
   })
 }
 
-/*
-variable "ecs_service" {
-  type = map(object({
-    desired_count = number
-    launch_type = string
-  }))
-}
-*/
-
 variable "vpc_endpoint_sg_id" {
   type = string
 }

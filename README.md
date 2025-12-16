@@ -1,22 +1,87 @@
 # AWS Real-Time Trading Data Pipeline
 
-Enterprise-grade real-time trading data pipeline built with AWS Kinesis, ECS, Lambda, and analytics services. Features automated deployment, real-time processing, and comprehensive monitoring.
+Enterprise-grade real-time trading data pipeline built on AWS using Kinesis, ECS (Fargate), Lambda, DynamoDB, Glue, and Athena.
+The project demonstrates event-driven processing, serverless analytics, secure networking, and fully automated infrastructure deployment using Terraform.
+
+---
 
 ## Prerequisites
 
-- **AWS CLI** configured with appropriate credentials
-- **Terraform** v1.5.0 or later
-- **IAM Permissions** for Kinesis, ECS, Lambda, S3, DynamoDB, Glue, Athena
-- **Bash** environment (Linux/macOS/WSL)
+- AWS CLI configured with sufficient permissions
 
-## Architecture
+- Terraform v1.5.0 or later
 
-### Infrastructure Components
-1. **Foundation** - VPC, Network Firewall, Internet gateway, NAT gateway, route tables,  VPC Endpoints
-2. **Data Streaming** - Kinesis S3, Kinesis Data Streams, Firehose
-3. **Producers** - ECS tasks generating mock trading data
-4. **Consumers** - Lambda processing trades, DynamoDB for positions
-5. **Analytics** - Glue Data Catalog, Athena for SQL queries
+- Docker (for image promotion to ECR)
+
+- Bash environment (Linux / macOS / WSL)
+
+---
+
+## Required AWS services access:
+
+- VPC, EC2, ECS, ECR
+
+- Kinesis Data Streams & Firehose
+
+- Lambda, DynamoDB
+
+- S3, Glue, Athena
+
+- IAM
+
+---
+
+## Architecture Overview
+
+Infrastructure Stages
+
+1. Foundation
+
+    - VPC with private subnets
+
+    - Internet Gateway
+
+    - VPC Interface & Gateway Endpoints (ECR, S3, Logs, etc.)
+
+2. Data Streaming
+
+    - Kinesis Data Stream (real-time ingestion)
+
+    - Kinesis Firehose (batch delivery)
+
+    - S3 data lake bucket (raw streaming data + trading signals)    
+
+3. Producers (Simulated Producer Application)
+
+    - ECS Fargate service
+
+    - Containerized application that simulates real-time trading events
+
+    - Images pulled from Amazon ECR
+
+    - No runtime internet access
+
+4. Consumers
+
+    - Lambda function triggered by Kinesis
+
+    - Processes trades in near real time
+
+    - Stores active positions in DynamoDB
+
+    - Archives completed trades to S3
+
+5. Analytics
+
+    - AWS Glue Data Catalog
+
+    - Glue Crawler for schema discovery
+
+    - Amazon Athena for SQL analytics
+
+    - Dedicated S3 bucket for Athena query results\
+
+--- 
 
 ### Project Structure
 ```
@@ -26,15 +91,18 @@ Enterprise-grade real-time trading data pipeline built with AWS Kinesis, ECS, La
 │   ├── data-streaming
 │   ├── foundation
 │   ├── producers
+│   └── s3
 ├── stages/            # 5-stage deployment pipeline with a bootstrap stage
 │   ├── 0-bootstrap
 │   ├── foundation
 │   ├── data-streaming
 │   ├── producers
 │   ├── consumers
-│   ├── analytics
+│   └── analytics
 ├── utils/             # Helper scripts and tools
 ├── .github/workflows/ # CI/CD automation
+│   ├── deploy.yml
+│   └── destroy.yml
 └── scripts/
     └── deployment-automation-scripts/
         ├── config.sh
@@ -44,106 +112,216 @@ Enterprise-grade real-time trading data pipeline built with AWS Kinesis, ECS, La
 
 ```
 
+---
+
 ## Deployment
 
 ### Local Deployment
 ```bash
-# Deploy entire pipeline
-./deploy.sh
+# Deploy the entire pipeline
+./scripts/deployment-automation-scripts/deploy.sh
 
 # Destroy all resources
-./destroy.sh
+./scripts/deployment-automation-scripts/destroy.sh
+
 ```
+
+The deployment script:
+
+- Bootstraps Terraform backend (S3 state bucket)
+
+- Deploys stages in the correct order
+
+- Promotes the Docker image from DockerHub to ECR
+
+- Injects the ECR image URI into the ECS producer stage
+
+- Starts the Glue crawler automatically
 
 ### CI/CD Deployment
-- **Test Branch**: Automatic deployment on push
-- **Main Branch**: Manual deployment via GitHub Actions
-  1. Go to Actions → "Deploy Trading Pipeline"
-  2. Click "Run workflow" → Select main branch
-  3. Click "Run workflow"
 
-## Post-Deployment Setup
+- Test branch: automatic validation
 
-### Analytics Ready
-The deployment script automatically starts the Glue crawler to discover S3 data schemas.
+- Main branch: manual deployment via GitHub Actions
 
-```bash
-# Check crawler status
-aws glue get-crawler --name trading-data-crawler | grep State
+Steps:
 
-# Wait for crawler to complete (READY state)
-```
+- GitHub → Actions
 
-### Query Trading Data
-Once crawler completes, query your data with Athena:
+- Select Deploy Trading Pipeline
 
-1. **Switch to trading workgroup** in Athena Console:
-   - Settings → Workgroup → Select `trading-analytics`
+- Click Run workflow
 
-2. **Run SQL queries:**
-```sql
--- Show discovered tables
-SHOW TABLES;
+- Choose the target branch
 
--- Analyze trading data
-SELECT symbol, AVG(price) as avg_price, COUNT(*) as records
-FROM raw_data 
-GROUP BY symbol;
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
 
 ## Data Flow
 
-### Real-Time Trading System
+### Real-Time Processing Path
+
+```bash 
+ECS Producer
+   ↓
+Kinesis Data Stream
+   ↓
+Lambda Consumer
+   ↓
+DynamoDB (active positions)
+   ↓
+S3 completed-trades/
 ```
-ECS Producer (1 sec) → Kinesis Stream (instant) → Lambda Consumer (instant) → DynamoDB (instant)
-                                                                            ↓
-                                                                    S3 completed-trades/
-```
+- Low latency
 
-### Batch Analytics System
-```
-Kinesis Stream → Firehose (5 min batches) → S3 raw-data/ → Glue Crawler (daily) → Athena Queries
-```
+- Event-driven
 
-**Real-Time:** Trading decisions and position management  
-**Batch:** Historical analysis and reporting
+- Fully serverless after ingestion
 
-### Trading Logic
-- **Buy Signal**: Price drops detected by Lambda consumer
-- **Sell Signal**: 5% profit threshold reached
-- **Position Storage**: DynamoDB for active positions
-- **Trade Archive**: S3 for completed trades
+### Batch Analytics Path
 
-## Utilities
-
-### Data Analysis Tool
 ```bash
-# Download and analyze Firehose data
-aws s3 cp s3://kinesis-s3-bucket-101/raw-data/2025/01/15/12/file.gz .
-gunzip file.gz
-python3 utils/parse_trading_data.py file
+Kinesis Stream
+   ↓
+Firehose (buffered batches)
+   ↓
+S3 raw-data/
+   ↓
+Glue Crawler
+   ↓
+Glue Data Catalog
+   ↓
+Athena SQL Queries
+```
+- Optimized for cost
+
+- Schema discovered automatically
+
+- SQL-based analytics
+
+## Analytics & Querying
+
+After deployment, the Glue crawler runs automatically to discover schemas.
+
+Verify crawler status
+```bash
+aws glue get-crawler --name <crawler-name> --query Crawler.State
+```
+Wait until the state is READY.
+
+## Query with Athena
+
+1. Open Amazon Athena
+
+2. Select the configured workgroup
+
+3. Run queries:
+```bash
+-- List discovered tables
+SHOW TABLES;
+
+-- Analyze raw trading data
+SELECT symbol, AVG(price) AS avg_price, COUNT(*) AS trades
+FROM raw_data
+GROUP BY symbol;
 ```
 
-## Monitoring
+## Trading Logic Overview
 
-- **ECS Console** - Producer task status
-- **Kinesis Console** - Stream metrics
-- **Lambda Console** - Consumer execution logs
-- **S3 Console** - Data files (5-minute batches)
-- **Athena Console** - Query trading data
+Producer
 
-## Troubleshooting
+- Generates mock real-time trading events
 
-**Deployment Issues:**
-- Verify AWS credentials: `aws sts get-caller-identity`
-- Check Terraform version: `terraform version`
+- Sends records to Kinesis
 
-**Data Flow Issues:**
-- Monitor Kinesis shard utilization
-- Check Lambda error rates and timeouts
-- Verify S3 bucket permissions
+Consumer (Lambda)
 
-## 🧠 Key Learnings
-- Implemented real-time data ingestion and analytics using Kinesis and Lambda.
-- Automated ETL metadata discovery with AWS Glue.
-- Designed CI/CD workflows for infrastructure automation with Terraform.
+- Detects buy/sell signals
+
+- Maintains open positions in DynamoDB
+
+- Writes completed trades to S3
+
+Analytics
+
+- Raw and completed trades are queryable via Athena
+
+- No ETL jobs required
+
+
+## Security Highlights
+
+- ECS tasks run in private subnets
+
+- No direct internet access at runtime
+
+- AWS services accessed via VPC Endpoints
+
+- S3 buckets:
+
+    -- Public access fully blocked
+
+    -- Versioning configurable
+
+    -- Lifecycle policies defined per stack
+
+- IAM roles follow least privilege
+
+## Monitoring & Observability
+
+- ECS Console – Producer task health
+
+- Kinesis Metrics – Throughput and shard utilization
+
+- Lambda Logs – Consumer execution
+
+- S3 – Raw and processed data
+
+- Athena – Query execution history
+
+
+## Key Learnings & Design Decisions
+
+- Built a real-time event-driven pipeline using AWS managed services
+
+- Separated infrastructure stages for clean dependency management
+
+- Used Glue Data Catalog as a metadata layer for S3-based analytics
+
+- Removed runtime internet dependency by using ECR + VPC endpoints
+
+- Designed reusable Terraform modules with clear responsibility boundaries
+
+## Final Notes
+
+This project demonstrates:
+
+- Production-grade AWS architecture
+
+- Secure networking
+
+- Clean Terraform module design
+
+- Real-time + batch analytics in one system
+
+It is intentionally structured to reflect how real systems are built, not just how services are connected.
+

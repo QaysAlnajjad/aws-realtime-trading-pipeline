@@ -3,7 +3,7 @@ output "vpc_id" {
 }
 
 output "ecs_subnets_ids" {
-    value = [aws_subnet.main["Prv-Sub-1A"].id, aws_subnet.main["Prv-Sub-1B"].id]
+    value = local.private_subnet_ids
 }
 
 output "vpc_endpoint_sg_id" {

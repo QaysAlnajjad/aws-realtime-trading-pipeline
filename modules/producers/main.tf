@@ -165,38 +165,24 @@ resource "aws_ecs_task_definition" "producer_task_definition" {
 
 # Security group for ECS tasks
 resource "aws_security_group" "ecs_task_sg" {
-    vpc_id = var.vpc_id
-    
-    # Outbound traffic for Docker image pulls and AWS services via VPC endpoints
-    egress {
-        from_port = 443
-        to_port = 443
-        protocol = "tcp"
-        cidr_blocks = [var.vpc_endpoint_sg_id]
-    }
-    
-    tags = { Name = var.ecs_security_group_name }
+  name = var.ecs_security_group_name
+  vpc_id = var.vpc_id
+
+  tags = { Name = var.ecs_security_group_name }
 }
+
+resource "aws_vpc_security_group_egress_rule" "ecs_to_endpoints_https" {
+  security_group_id = aws_security_group.ecs_task_sg.id
+
+  ip_protocol = "tcp"
+  from_port = 443
+  to_port = 443
+
+  referenced_security_group_id = var.vpc_endpoint_sg_id
+}
+
 
 # ECS Service
-/*
-resource "aws_ecs_service" "producer_service" {
-  for_each = var.ecs_service
-    name = each.key 
-    cluster = aws_ecs_cluster.kinesis_producers.id
-    task_definition = aws_ecs_task_definition.producer_task_definition.arn
-    desired_count = each.value.desired_count                       
-    launch_type = each.value.launch_type
-    
-    network_configuration {
-        subnets = var.ecs_subnets_ids
-        security_groups = [aws_security_group.ecs_task_sg.id]
-    }
-    
-    tags = { Name = each.key }
-}
-*/
-
 resource "aws_ecs_service" "producer_service" {
   name = var.ecs_service.name
   cluster = aws_ecs_cluster.kinesis_producers.id

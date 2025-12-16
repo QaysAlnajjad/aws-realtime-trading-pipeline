@@ -1,16 +1,13 @@
-variable "data_stream_s3_bucket_name" {
+variable "s3_bucket_name" {
     type = string
 }
 
-variable "kinesis_data_stream_name" {
-    type = string
-}
-
-variable "kinesis_firehose_name" {
+variable "bucket_versioning" {
     type = string 
+    default = "Disabled" 
 }
 
-variable "bucket_lifecycle_rules_config" {
+variable "bucket_lifecycle_rules" {
     type = list(object({
         id = string
         prefix = string
@@ -20,4 +17,5 @@ variable "bucket_lifecycle_rules_config" {
         }))
         expiration_days = number
     }))
+    default = []
 }

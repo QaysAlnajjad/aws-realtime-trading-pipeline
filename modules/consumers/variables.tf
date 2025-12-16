@@ -2,7 +2,7 @@ variable "kinesis_stream_arn" {
     type = string
 }
 
-variable "s3_bucket_id" {
+variable "data_stream_s3_bucket_id" {
     type = string
 }
 

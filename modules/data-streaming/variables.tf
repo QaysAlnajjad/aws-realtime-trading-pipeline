@@ -1,5 +1,4 @@
-variable "s3_bucket_name" {
-    description = "Name of S3 bucket for streaming data"
+variable "data_stream_s3_bucket_id" {
     type = string
 }
 

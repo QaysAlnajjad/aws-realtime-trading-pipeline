@@ -1,79 +1,4 @@
 //=========================================================================================================================================
-//                                                             S3 bucket
-//=========================================================================================================================================
-
-resource "aws_s3_bucket" "s3_bucket" {
-    bucket = var.s3_bucket_name
-    force_destroy = true
-    tags = {
-      Name = var.s3_bucket_name
-      Description = "S3 bucket for Kinesis data streaming store"
-    }
-}
-
-resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
-    bucket = aws_s3_bucket.s3_bucket.id
-    # Versioning disabled intentionally:
-    # - Data is append-only
-    # - No overwrite or rollback use case
-    # - Lifecycle rules define retention
-    versioning_configuration {
-      status = "Disabled"
-    }  
-}
-
-resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access" {
-    bucket = aws_s3_bucket.s3_bucket.id
-    block_public_acls = true
-    block_public_policy = true
-    ignore_public_acls = true
-    restrict_public_buckets = true  
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "s3_bucket_lifecycle" {
-    bucket = aws_s3_bucket.s3_bucket.id
-
-    # Rule for raw streaming data (less critical)
-    rule {
-      id = "raw_data_lifecycle"
-      status = "Enabled"
-      filter {
-        prefix = "raw-data/"
-      }
-      transition {
-        days = 30
-        storage_class = "STANDARD_IA"
-      }
-      expiration {
-        days = 90
-      }
-    }
-    # Rule for trading signals (more valuable)
-    rule {
-      id = "trading_signals_lifecycle"
-      status = "Enabled"
-      filter {
-        prefix = "trading-signals/"
-      }
-      # Move to IA after 30 days
-      transition {
-        days = 30
-        storage_class = "STANDARD_IA"
-      }
-      # Move to Glacier after 90 days 
-      transition {
-        days = 90
-        storage_class = "GLACIER"
-      }
-      # Delete after 365 days
-      expiration {
-        days = 365
-      }
-    }
-}
-
-
-//=========================================================================================================================================
 //                                                        Kinesis Data Stream
 //=========================================================================================================================================
 
@@ -127,8 +52,8 @@ resource "aws_iam_role_policy" "kinesis_firehose_policy" {
             "s3:PutObject"
           ]
           Resource = [
-            aws_s3_bucket.s3_bucket.arn,
-            "${aws_s3_bucket.s3_bucket.arn}/*"
+            "arn:aws:s3:::${var.data_stream_s3_bucket_id}",
+            "arn:aws:s3:::${var.data_stream_s3_bucket_id}/*"
           ]
         },
         {
@@ -153,7 +78,7 @@ resource "aws_kinesis_firehose_delivery_stream" "kinesis_firehose" {
     }
     extended_s3_configuration {
         role_arn = aws_iam_role.kinesis_firehose_role.arn
-        bucket_arn = aws_s3_bucket.s3_bucket.arn
+        bucket_arn = "arn:aws:s3:::${var.data_stream_s3_bucket_id}"
         prefix = "raw-data/"
         
         # Whichever comes first triggers the batch: 5 MB is reached OR 5 minutes pass

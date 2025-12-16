@@ -9,7 +9,3 @@ output "glue_crawler_name" {
 output "athena_workgroup_name" {
   value = aws_athena_workgroup.trading_workgroup.name
 }
-
-output "athena_results_bucket" {
-  value = aws_s3_bucket.athena_results.bucket
-}

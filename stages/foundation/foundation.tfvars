@@ -10,10 +10,10 @@ endpoint_config = {
   s3 = {
     vpc_endpoint_type = "Gateway"
   }
-  ecr_api = {
+  "ecr.api" = {
     vpc_endpoint_type = "Interface"
   }
-  ecr_dkr = {
+  "ecr.dkr" = {
     vpc_endpoint_type = "Interface"
   }
 }

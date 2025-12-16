@@ -61,7 +61,7 @@ resource "aws_iam_policy" "lambda_policies" {
                     Resource = coalesce(
                         each.key == "kinesis-access" ? [var.kinesis_stream_arn] : null,
                         each.key == "dynamodb-access" ? [aws_dynamodb_table.dynamodb_table.arn] : null,
-                        each.key == "s3-access" ? ["arn:aws:s3:::${var.s3_bucket_id}/*"] : null,
+                        each.key == "s3-access" ? ["arn:aws:s3:::${var.data_stream_s3_bucket_id}/*"] : null,
                         []
                     )
                 }
@@ -90,7 +90,7 @@ resource "aws_lambda_function" "kinesis_consumer" {
     environment {
         variables = {
             DYNAMODB_TABLE = aws_dynamodb_table.dynamodb_table.name
-            S3_BUCKET = var.s3_bucket_id
+            S3_BUCKET = var.data_stream_s3_bucket_id
         }
     }
     

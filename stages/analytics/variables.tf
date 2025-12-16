@@ -1,7 +1,5 @@
-variable "athena_results_bucket_name" {
-  description = "S3 bucket for Athena query results"
+variable "athena_results_s3_bucket_name" {
   type = string
-  default = ""
 }
 
 variable "glue_database_name" {

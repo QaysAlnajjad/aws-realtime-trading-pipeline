@@ -7,24 +7,9 @@ resource "aws_glue_catalog_database" "trading_database" {
   description = "Database for trading data analytics"
 }
 
-resource "aws_glue_crawler" "trading_crawler" {
-  database_name = aws_glue_catalog_database.trading_database.name
-  name = var.glue_crawler_name
-  role = aws_iam_role.glue_role.arn
-
-  s3_target {
-    path = "s3://${var.s3_bucket_id}/raw-data/"
-  }
-
-  s3_target {
-    path = "s3://${var.s3_bucket_id}/completed-trades/"
-  }
-
-  schedule = "cron(0 6 * * ? *)"  # Daily at 6 AM
-}
 
 //======================================================================================================================================
-//                                                        IAM Role for Glue
+//                                                          Glue Crawler
 //======================================================================================================================================
 
 resource "aws_iam_role" "glue_role" {
@@ -49,7 +34,7 @@ resource "aws_iam_role_policy_attachment" "glue_service_role" {
 }
 
 resource "aws_iam_role_policy" "glue_s3_policy" {
-  name = "glue-s3-access"
+  name = "glue-s3-policy"
   role = aws_iam_role.glue_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -61,22 +46,57 @@ resource "aws_iam_role_policy" "glue_s3_policy" {
           "s3:ListBucket"
         ]
         Resource = [
-          "arn:aws:s3:::${var.s3_bucket_id}",
-          "arn:aws:s3:::${var.s3_bucket_id}/*"
+          "arn:aws:s3:::${var.data_stream_s3_bucket_id}",
+          "arn:aws:s3:::${var.data_stream_s3_bucket_id}/*"
         ]
       }
     ]
   })
 }
 
+resource "aws_glue_crawler" "trading_crawler" {
+  name = var.glue_crawler_name
+  database_name = aws_glue_catalog_database.trading_database.name
+  role = aws_iam_role.glue_role.arn
+
+  s3_target {
+    path = "s3://${var.data_stream_s3_bucket_id}/raw-data/"
+  }
+
+  s3_target {
+    path = "s3://${var.data_stream_s3_bucket_id}/completed-trades/"
+  }
+
+  schedule = "cron(0 6 * * ? *)"  # Daily at 6 AM
+}
+
+
 //======================================================================================================================================
 //                                                        Athena
 //======================================================================================================================================
-
+/*
 resource "aws_s3_bucket" "athena_results" {
   bucket = var.athena_results_bucket
   force_destroy = true
 }
+
+resource "aws_s3_bucket_public_access_block" "athena_results" {
+  bucket = aws_s3_bucket.athena_results.id
+
+  block_public_acls = true
+  block_public_policy = true
+  ignore_public_acls = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_versioning" "athena_results" {
+  bucket = aws_s3_bucket.athena_results.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+*/
 
 resource "aws_athena_workgroup" "trading_workgroup" {
   name = var.athena_workgroup_name
@@ -87,7 +107,7 @@ resource "aws_athena_workgroup" "trading_workgroup" {
     enforce_workgroup_configuration = true
     
     result_configuration {
-      output_location = "s3://${aws_s3_bucket.athena_results.bucket}/"
+      output_location = "s3://${var.athena_results_s3_bucket_id}/"
     }
   }
 }
