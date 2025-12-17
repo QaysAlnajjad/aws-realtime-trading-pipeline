@@ -29,19 +29,9 @@
 |  INPUTS:                                    |
 |   • kinesis_stream_arn                      |
 |   • data_stream_s3_bucket_id                |
-│  OUTPUTS:                                   │
-|   • lambda_function_arn ────────────────────┼─────▶ used by 
-│   • dynamodb_table_name ────────────────────┼─────▶ used by 
-|   • dynamodb_table_arn ─────────────────────┼─────▶ used by 
 └─────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────┐
 │                 analytics                   │
 |  INPUTS:                                    |
 |   • data_stream_s3_bucket_id                |
-│  OUTPUTS:                                   │
-│   • alb_dns_name ───────────────────────────┼─────▶ used by global/cdn_dns
-│   • alb_zone_id ────────────────────────────┼─────▶ used by global/cdn_dns (to create a Route 53 primary record for admin access)
-│   • target_group_arn ───────────────────────┼─────▶ used by primary/ecs
-|   • target_group_arn_suffix ────────────────┼─────▶ used by primary/ecs
-|   • alb_arn_suffix ─────────────────────────┼─────▶ used by primary/ecs
 └─────────────────────────────────────────────┘
