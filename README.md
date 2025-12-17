@@ -495,6 +495,17 @@ Analytics
 
 - IAM roles follow least privilege
 
+- ECS Task Security Group Egress
+
+    Although VPC endpoints are used for ECR, S3, and CloudWatch, ECS image pulls require outbound HTTPS access to AWS-managed, dynamically addressed backing infrastructure used by ECR for image layer delivery.
+
+    These IPs are not represented by a stable CIDR range, VPC CIDR, or endpoint security group.
+    Restricting egress to endpoint security groups or VPC CIDR results in CannotPullContainerError.
+
+    For this reason, the ECS task security group allows outbound TCP/443 to 0.0.0.0/0.
+    This does not grant internet access, as tasks run in private subnets with no NAT or IGW route.
+    Network isolation is enforced at the route table level, while IAM enforces service-level access.
+
 ## Monitoring & Observability
 
 - ECS Console – Producer task health

@@ -5,7 +5,6 @@
 │  OUTPUTS:                                   │
 |   • vpc_id ─────────────────────────────────┼─────▶ used by producers, 
 │   • ecs_subnets_ids ────────────────────────┼─────▶ used by producers,
-|   • vpc_endpoint_sg_id ─────────────────────┼─────▶ used by producers,                      
 └─────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────┐
 │                 data-streaming              │
@@ -24,7 +23,6 @@
 |   • kinesis_stream_name                     |
 |   • vpc_id                                  |
 |   • ecs_subnets_ids                         |
-|   • vpc_endpoint_sg_id                      |     
 └─────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────┐
 │                 consumers                   │

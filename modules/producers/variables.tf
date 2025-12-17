@@ -38,6 +38,3 @@ variable "ecs_service" {
   })
 }
 
-variable "vpc_endpoint_sg_id" {
-  type = string
-}

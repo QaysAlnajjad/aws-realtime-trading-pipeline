@@ -10,7 +10,6 @@ on:
 jobs:
   destroy:
     runs-on: ubuntu-latest
-    if: github.event.inputs.confirm_destroy == 'DESTROY'
     
     steps:
     - name: Checkout code
