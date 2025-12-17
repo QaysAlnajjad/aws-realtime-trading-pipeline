@@ -31,4 +31,4 @@ jobs:
       run: chmod +x scripts/deployment-automation-scripts/destroy.sh
       
     - name: Destroy infrastructure
-      run: .scripts/destroy.sh
+      run: .scripts/deployment-automation-scripts/destroy.sh
