@@ -27,7 +27,7 @@ jobs:
         terraform_version: 1.5.0
         
     - name: Make deploy script executable
-      run: chmod +x scripts/deploy.sh
+      run: chmod +x scripts/deployment-automation-scripts/deploy.sh
       
     - name: Deploy infrastructure
       run: .scripts/deploy.sh
