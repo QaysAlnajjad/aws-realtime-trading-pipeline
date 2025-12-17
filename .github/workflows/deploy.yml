@@ -30,4 +30,4 @@ jobs:
       run: chmod +x scripts/deployment-automation-scripts/deploy.sh
       
     - name: Deploy infrastructure
-      run: .scripts/deployment-automation-scripts/deploy.sh
+      run: ./scripts/deployment-automation-scripts/deploy.sh
