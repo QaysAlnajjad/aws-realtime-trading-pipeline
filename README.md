@@ -303,7 +303,8 @@ GitHub Actions will automatically:
 
 ✔ Start the Glue crawler automatically
 
-⏱ Typical deployment time: 10–15 minutes
+
+⏱ Typical deployment time: 5–10 minutes
 
 🔍 7. Validate the Deployment
 Real-Time Path
