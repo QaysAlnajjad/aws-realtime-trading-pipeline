@@ -290,11 +290,17 @@ From GitHub → Actions:
 GitHub Actions will automatically:
 
 ✔ Assume the IAM role
+
 ✔ Initialize Terraform backends
+
 ✔ Deploy stages in dependency order
+
 ✔ Promote Docker image → ECR
+
 ✔ Deploy ECS producers
+
 ✔ Deploy Kinesis, Lambda, DynamoDB
+
 ✔ Start the Glue crawler automatically
 
 ⏱ Typical deployment time: 10–15 minutes
@@ -346,10 +352,15 @@ From GitHub → Actions:
 The destroy workflow:
 
 ✔ Destroys stacks in correct dependency order
+
 ✔ Cleans up ECS services and Lambda
+
 ✔ Deletes DynamoDB tables
+
 ✔ Empties S3 buckets
+
 ✔ Deletes ECR images and repository
+
 ✔ Removes runtime artifacts
 
 This guarantees no orphaned resources.
