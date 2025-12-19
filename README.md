@@ -466,6 +466,21 @@ FROM raw_data
 GROUP BY symbol;
 ```
 
+## 🎥 Demo Videos
+
+- ▶️ **Demo 1 (5 min)**  
+  *AWS Real-Time Trading Pipeline – Bootstrap & CI/CD Deployment (Terraform + OIDC)*  
+  https://youtu.be/xxxxx
+
+- ▶️ **Demo 2 (6 min)**  
+  *AWS Real-Time Trading Pipeline – Validation, Athena Queries*  
+  https://youtu.be/xxxxx
+
+> All demos were recorded using a sandbox AWS account with GitHub Actions OIDC authentication.  
+> No static credentials, secrets, or IAM users were used or exposed.
+
+---
+
 ## Trading Logic Overview
 
 Producer
