@@ -5,7 +5,24 @@ The project demonstrates event-driven processing, serverless analytics, secure n
 
 ---
 
-## Architecture Overview
+# 📘 Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Project Structure](#project-structure)
+- [Cross-Stack Dependency Map](#cross-stack-dependency-map)
+- [Prerequisites (Applies to Both Local & CI/CD)](#prerequisites-applies-to-both-local--cicd)
+- [Deployment Options](#deployment-options)
+- [Deployment Options](#data-flow)
+- [Demo Videos](#demo-videos)
+- [Trading Logic Overview](#trading-logic-overview)
+- [Security Highlights](#security-highlights)
+- [Monitoring & Observability](#monitoring--observability)
+- [Key Learnings & Design Decisions](#key-learnings--design-decisions)
+- [Final Notes](#final-notes)
+
+---
+
+# **Architecture Overview**
 
 Infrastructure Stages
 
@@ -57,7 +74,7 @@ Infrastructure Stages
 
 --- 
 
-### Project Structure
+# **Project Structure**
 ```
 ├── modules/           # Reusable Terraform modules
 │   ├── analytics
@@ -87,7 +104,16 @@ Infrastructure Stages
 ```
 ---
 
-## Prerequisites (Applies to Both Local & CI/CD)
+# **Cross-Stack Dependency Map**
+
+This project uses multiple Terraform stacks.
+A detailed diagram of how stack outputs flow between stacks is available here:
+
+👉 [Cross-Stack Variable Flow](docs/cross-stack-flow.md)
+
+--- 
+
+# **Prerequisites (Applies to Both Local & CI/CD)**
 AWS
 
 ✔ AWS account with permissions to create:
@@ -117,7 +143,7 @@ Additional
 
 ---
 
-## Deployment Options
+# **Deployment Options**
 
 You can deploy this project in two ways:
 
@@ -397,7 +423,7 @@ The recommended approach is CI/CD via GitHub Actions.
 
 ```
 
-## Data Flow
+# **Data Flow**
 
 ### Real-Time Processing Path
 
@@ -466,7 +492,7 @@ FROM raw_data
 GROUP BY symbol;
 ```
 
-## 🎥 Demo Videos
+# **Demo Videos**
 
 - ▶️ **Demo 1 (5 min)**  
   *AWS Real-Time Trading Pipeline – Bootstrap & CI/CD Deployment (Terraform + OIDC)*  
@@ -481,7 +507,7 @@ GROUP BY symbol;
 
 ---
 
-## Trading Logic Overview
+# **Trading Logic Overview**
 
 Producer
 
@@ -504,7 +530,7 @@ Analytics
 - No ETL jobs required
 
 
-## Security Highlights
+# **Security Highlights**
 
 - ECS tasks run in private subnets
 
@@ -533,7 +559,7 @@ Analytics
     This does not grant internet access, as tasks run in private subnets with no NAT or IGW route.
     Network isolation is enforced at the route table level, while IAM enforces service-level access.
 
-## Monitoring & Observability
+# **Monitoring & Observability**
 
 - ECS Console – Producer task health
 
@@ -546,7 +572,7 @@ Analytics
 - Athena – Query execution history
 
 
-## Key Learnings & Design Decisions
+# **Key Learnings & Design Decisions**
 
 - Built a real-time event-driven pipeline using AWS managed services
 
@@ -558,7 +584,7 @@ Analytics
 
 - Designed reusable Terraform modules with clear responsibility boundaries
 
-## Final Notes
+# **Final Notes**
 
 This project demonstrates:
 
